@@ -132,8 +132,8 @@ apply(dat[dili %in% c("None","Less","Most"),
                bsep, thle, hepg2_glu, hepg2_gal, hepg2_72h)], 2, function(x) 
                  length(which(!is.na(x))))
 
-# length(which(complete.cases(dat[dili %in% c("None","Less","Most"),
-#  list(bsep, thle, hepg2_glu, hepg2_72h)])))
+#length(which(complete.cases(dat[dili %in% c("None","Less","Most"),
+# list(bsep, thle, hepg2_glu, hepg2_72h)])))
 
 
 ```
@@ -241,7 +241,7 @@ plot_grid(boxplots[["fu_liver_exp"]], boxplots[["fu_bsa_exp"]], boxplots[["kp"]]
 tiff(file.path("figures", "SuppFigure1_UnivariateBoxplotsRemaining.tif"),
      width = 12, height = 10, units = "in", res = 300)
 #supplemental figure 1 (all continuous variables in grid format)
-do.call("grid.arrange", c(boxplots[vars[c(4,5,7,8,9,10)]], ncol=3))
+do.call("grid.arrange", c(boxplots[which(!names(boxplots) %in% c("dose", "clogp", "fsp3"))], ncol=3))
 graphics.off()
 
 #showing single plot... can change easily based on var name
@@ -264,10 +264,7 @@ vars <- c("ion",
           "thle",
           "hepg2_glu",
           "hepg2_gal",
-          "hepg2_72h",
-          "mrp2",
-          "mrp3",
-          "mrp4")
+          "hepg2_72h")
 
 var_labs <- c("Ionization~(Ion)",
               "Extended~Clearance~Classification~System~(ECCS)",
@@ -276,10 +273,7 @@ var_labs <- c("Ionization~(Ion)",
               "THLE~Cytotoxicity~(THLE)",
               "HepG2~Glucose~Cytotoxicity~(HepG2[glu])",
               "HepG2~Galactose~Cytotoxicity~(HepG2[gal])",
-              "HepG2~72~Hour~Cytotoxicity~(HepG2['72h'])",
-              "Multidrug~Resistance~Protein~2~Inhibition~(MRP2)",
-              "Multidrug~Resistance~Protein~3~Inhibition~(MRP3)",
-              "Multidrug~Resistance~Protein~4~Inhibition~(MRP4)")
+              "HepG2~72~Hour~Cytotoxicity~(HepG2['72h'])")
 
 leg_labs <- c("Ion",
               "ECCS",
@@ -288,16 +282,13 @@ leg_labs <- c("Ion",
               "THLE",
               "HepG2[glu]",
               "HepG2[gal]",
-              "HepG2['72h']",
-              "MRP2",
-              "MRP3",
-              "MRP4")
+              "HepG2['72h']")
 
 tmp <- dat[dili %in% c("None", "Less", "Most"),
            list(dili, ion, eccs, bddcs, bsep, thle,
-                hepg2_glu,hepg2_gal,hepg2_72h,
-                mrp2,mrp3,mrp4)]
-#Class 0 is essentially missing information
+                hepg2_glu,hepg2_gal,hepg2_72h)]
+
+#Class 0 for bddcs indicates the classification was not able to be determined or not available
 tmp[bddcs=="Class 0" , bddcs := NA]
 tmp[ , dili := factor(dili, levels = c("None","Less","Most"))]
 
@@ -307,18 +298,12 @@ tmp[ , thle := paste0("Class ", as.integer(thle/2))]
 tmp[ , hepg2_glu := paste0("Class ", as.integer(hepg2_glu/2))]
 tmp[ , hepg2_gal := paste0("Class ", as.integer(hepg2_gal/2))]
 tmp[ , hepg2_72h := paste0("Class ", as.integer(hepg2_72h/2))]
-tmp[ , mrp2 := paste0("Class ", as.integer(mrp2/2))]
-tmp[ , mrp3 := paste0("Class ", as.integer(mrp3/2))]
-tmp[ , mrp4 := paste0("Class ", as.integer(mrp4/2))]
 
 tmp[bsep == "Class NA", bsep := NA]
 tmp[thle == "Class NA", thle := NA]
 tmp[hepg2_glu == "Class NA", hepg2_glu := NA]
 tmp[hepg2_gal == "Class NA", hepg2_gal := NA]
 tmp[hepg2_72h == "Class NA", hepg2_72h := NA]
-tmp[mrp2 == "Class NA", mrp2 := NA]
-tmp[mrp3 == "Class NA", mrp3 := NA]
-tmp[mrp4 == "Class NA", mrp4 := NA]
 
 tmp <- droplevels(tmp)
 
@@ -369,8 +354,8 @@ plot_grid(barplots[["ion"]], barplots[["bddcs"]],
 graphics.off()
 
 tiff(file.path("figures", "SuppFigure2_UnivariateStackedBarCharts.tif"),
-     width = 12, height = 24, units = "in", res = 300)
-do.call("grid.arrange", c(barplots[vars[4:11]], ncol=2))
+     width = 12, height = 18, units = "in", res = 300)
+do.call("grid.arrange", c(barplots[which(!names(barplots) %in% c("ion", "bddcs"))], ncol=2))
 graphics.off()
 
 #example of single figure output
@@ -400,16 +385,14 @@ cdat <- as.data.table(data_prep(dat,
 
 cor_vars <- c("dose", "cmax", "mw","fsp3","clogp","clogd","psa",
               "fu_liver_exp","fu_bsa_exp","kp","kpuu_exp",
-              "bsep","thle","hepg2_glu","hepg2_gal", "hepg2_72h",
-              "mrp2", "mrp3", "mrp4")
+              "bsep","thle","hepg2_glu","hepg2_gal", "hepg2_72h")
 
 cmat <- cor(as.matrix(cdat[ , cor_vars, with = F]), use = "complete.obs")
 cmat[cmat==1] <- 0
 
 labs <- c("Dose", "Cmax", "MW", ":Fsp^3", "cLogP", "cLogD", "PSA",
           ":f[paste(u, ',', liver)]", ":f[paste(u, ',', BSA)]", "Kp", ":Kp[uu]",
-          "BSEP", "THLE", ":HepG2[glu]", ":HepG2[gal]", ":HepG2['72h']",
-          "MRP2", "MRP3", "MRP4")
+          "BSEP", "THLE", ":HepG2[glu]", ":HepG2[gal]", ":HepG2['72h']")
 
 colnames(cmat) <- labs
 rownames(cmat) <- labs
@@ -441,8 +424,8 @@ fs_rn <- rbindlist(list(
   expand.grid(fs = c("dose", "dose|physchem", "dose|physchem|bddcs", "dose|physchem|invitro_safety"),
               rn = "dili|dose|thle|bsep",
               cc = cor_cutoffs),
-  expand.grid(fs = c("dose", "dose|physchem", "dose|physchem|invitro_safety"),
-              rn = "dili|dose|mrp2",
+  expand.grid(fs = c("dose", "dose|physchem", "dose|physchem|bddcs", "dose|physchem|invitro_safety"),
+              rn = "dili|dose|thle|bsep|hepg2_72h|hepg2_gal|hepg2_glu",
               cc = cor_cutoffs)
 ))
 fs_rn[ , fsrn := paste(fs, rn, cc, sep = "|||")]
@@ -526,17 +509,22 @@ dili_model_results <- rbindlist(lapply(1:length(dili_models),
 dili_model_results[ , c("features", "dataset", "cor_cutoff") := tstrsplit(data_feature_coff_name, "|||", fixed = T)]    
 
 dili_model_results <- dili_model_results[!is.na(ROC)]
-dili_model_results[ , dataset_label := ifelse(dataset=="dili|dose", paste0("Full Dataset\n(",N," drugs)"), ifelse(dataset=="dili|dose|kp",paste0("TK Dataset\n(",N," drugs)"), paste0("Safety Dataset\n(",N," drugs)")))]
+dili_model_results[ , dataset_label := ifelse(dataset=="dili|dose",
+                                              paste0("Full Dataset\n(",N," drugs)"),
+                                              ifelse(dataset=="dili|dose|kp",
+                                                     paste0("TK Dataset\n(",N," drugs)"),
+                                                     paste0("Safety Dataset\n(",N," drugs)")))]
 dili_model_results[ , dataset_label := factor(dataset_label, levels = unique(dataset_label))]
 dili_model_results[ , feature_label := gsub("|"," + ", features, fixed =T)]
 
 dili_model_results[ , rank_by_dataset := rank(-ROC), by = list(model, dataset)]
 
 
-dili_model_results_subset <- dili_model_results[!grepl("cmax|insilico_pk", features) &
-                                                  grepl("dose", features, fixed = T) & 
-                                                  !grepl("mrp2", dataset) &
-                                                  model == "rrf_dn_model"]
+dili_model_results_subset <- dili_model_results[grepl("dose", features, fixed = T) &
+                                                model == "rrf_dn_model" &
+                                                !grepl("hepg2_72h", dataset, fixed = T)]
+#can remove hepg2 filter of model results to show impact of the smaller dataset (254 drugs) that had a complete set of bsep, thle and hepg2 assay data
+#nearly identical results with smaller yet complete dataset as expected.
 dili_model_results_subset[ , ROC_MEAN := median(ROC), by = list(data_feature_coff_name)]
 dili_model_results_subset[ , rank_by_dataset := rank(-ROC_MEAN), by = list(model, dataset)]
 
@@ -761,7 +749,7 @@ if(RERUN_DD_MODEL == TRUE) {
                                                         models2run = "ranger",
                                                         sampling = "down",
                                                         cvnumber = 5,
-                                                        cvrepeat = 1)
+                                                        cvrepeat = 5)
                              return(models)
                            }
   )
